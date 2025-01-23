@@ -1,0 +1,32 @@
+name: wf-dvelop-deploy
+on: 
+  push:
+    branches:
+      - develop
+jobs:
+  develop-build-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chekcout Repo
+        uses: actions/checkout@v4 
+      - name: Build Website With Parcel 
+        run: |
+          npx parcel build "./src/index.html" --dist-dir "./dev" --public-url: "./"
+      - name: Upload Build Artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./dev"
+          name: "develop-artifact"
+  develop-deploy-job:
+    needs: "develop-build-job"
+    environment: "development-env"
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Artifacts on GH Pages 
+        uses: actions/deploy-pages@v4 
+        with: 
+          artifact_name: "develop-artifact"
+          token: ${{github.token}}
